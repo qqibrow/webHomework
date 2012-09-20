@@ -25,11 +25,16 @@ var passXmlFile = function(){
 		} 
 		else 
 		{ 
-			alert(fileName + " open succeed");
+			//alert(fileName + " open succeed");
+			str = printTable(xmlDoc);
+			document.getElementById("content").innerHTML = str;
 			customerWindow = window.open('example.html','');
+			//docRef = customerWindow.document.open("text/html","replace");
+			customerWindow.document.getElementById("content").innerHTML = "hello";
+			//customerWindow.document.getElementById("content").innerHTML = str;
 			
 		//	customerWindow.document.write("<p>This is 'myWindow'</p>");
-		//	customerWindow.document.close();
+			customerWindow.document.close();
 			//printTable(customerWindow.document, xmlDoc);	
 			
 		} 
@@ -129,12 +134,12 @@ function createTable(content)
 	document.write('<table>' + content + '</table>');
 }
 
-var printTable = function(document, xmlDoc)
+var printTable = function(xmlDoc)
 {	
-	document.write('<form>');
-	document.write('<table> <th> List of Customer Information </th>');
+	content = '';
+	content += '<form> <table> <th> List of Customer Information </th>';
 	
-	document.write(createRow(createBlock("Select One Click Submit") +  createBlock("Customer ID") + createBlock("Company Name") + createBlock("Contact Name") + createBlock("Contact Title") + createBlock("Phone")));
+	content += (createRow(createBlock("Select One Click Submit") +  createBlock("Customer ID") + createBlock("Company Name") + createBlock("Contact Name") + createBlock("Contact Title") + createBlock("Phone")));
 	
 	
 	customer = xmlDoc.getElementsByTagName("Customer")[0];
@@ -165,7 +170,7 @@ var printTable = function(document, xmlDoc)
 		}
 		
 		str = createRow(str);
-		document.write(str);
+		content +=(str);
 		i++;
 	  
 	  
@@ -174,9 +179,8 @@ var printTable = function(document, xmlDoc)
 	 
 	}
 	
-	document.write('</table>');
-	document.write('</form>');
-	document.write('<input type="submit" value="Submit" onClick = "showCustomerOrder()"/>');
+	content += '</table></form><input type="submit" value="Submit" onClick = "showCustomerOrder()"/>';
+	return content;
 }
 
 
