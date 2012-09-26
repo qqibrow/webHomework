@@ -1,14 +1,3 @@
-/*
-I don't know why this code is wrong
-
-customers = xmlDoc.getElementsByTagName("Customer");
-
-for( customer in customers)
-{
-	 document.write('<b>'+customer.nodeName+' : </b>');
-}
-
-*/
 var passXmlFile = function(){
 
 	if (document.implementation && 
@@ -25,22 +14,29 @@ var passXmlFile = function(){
 		} 
 		else 
 		{ 
-			//alert(fileName + " open succeed");
-			str = printTable(xmlDoc);
-			document.getElementById("content").innerHTML = str;
+			alert(fileName + " open succeed");
+			str = generatePage(printTable(xmlDoc));
+			//document.getElementById("content").innerHTML = str;
 			customerWindow = window.open('example.html','');
-			//docRef = customerWindow.document.open("text/html","replace");
-			customerWindow.document.getElementById("content").innerHTML = "hello";
-			//customerWindow.document.getElementById("content").innerHTML = str;
+			customerWindow.document.write(str);
 			
-		//	customerWindow.document.write("<p>This is 'myWindow'</p>");
+			//customerWindow.document.getElementById("content").innerHTML = "hello";
+			
 			customerWindow.document.close();
-			//printTable(customerWindow.document, xmlDoc);	
 			
 		} 
 	} 
 
 }
+
+function generatePage(str)
+{
+	return "<HTML> <HEAD> <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">"
++ "<TITLE>Simple Javascript</TITLE><script type="text/javascript"></script>"
++ "<style media="screen" type="text/css">table, th, td{border: 1px solid black;}</style></HEAD> "
++ "<BO""DY>" + str + "</BODY></HTML>";
+}
+
 
 
 function printOneOrder(order)

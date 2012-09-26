@@ -4,21 +4,291 @@
 <HEAD> 
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <TITLE>Simple Javascript</TITLE> 
+<style media="screen" type="text/css">
+
+.center
+{
+	
+	display:block;
+	 margin-left: auto;
+    margin-right: auto;
+	text-align:center;
+}
+
+
+table, th, td
+{
+border: 1px solid black;
+}
+</style>
 <script type="text/javascript" src="whitespace.js"></script>
-<script type="text/javascript" src="hw4.js"></script>
 <script type="text/javascript">
 
+function checkCustomerExist(xmlDoc)
+{
+	customers = xmlDoc.getElementsByTagName("Customer");
+	if(customers.length == 0)
+		return false;
+	return true;
+}
+function getCustomerIDOforder(order)
+{
+	orderchild = first_child(order);
+		while(orderchild)
+		{
+			if(orderchild.nodeName == 'CustomerID')
+			{	
+				return data_of(first_child(orderchild));
+			}			
+			orderchild = node_after(orderchild);
+		}
+	return null;
+}
 
-</script> 
+function ifCustomerIdExist(customerID, customerIDs)
+{
+	for(i = 0; i < customerIDs.length; i++)
+	{
+		if(customerIDs[i] == customerID)
+			return true;
+		
+	}
+	return false;
+}
+
+function getAllcustomerIDs(xmlDoc)
+{
+	var array = new Array();
+	customers = xmlDoc.getElementsByTagName("Customer");
+	for(i = 0; i < customers.length; i++)
+	{
+		array[i] = customers[i].getAttribute("CustomerID");	
+	}
+	return array;
+}
+
+function getAllOrderCustomers(xmlDoc)
+{
+	var array = new Array();
+	orders = xmlDoc.getElementsByTagName("Order");
+	for(i = 0; i < orders.length; i++)
+	{
+		array[i] = getCustomerIDOforder(orders[i]);
+		
+	}
+	return array;
+}
+
+
+function checkOrderHasRelatedCustomer(xmlDoc)
+{
+	customerIDs = getAllcustomerIDs(xmlDoc);
+	ordersCustomer = getAllOrderCustomers(xmlDoc);
+	
+	for( item in ordersCustomer)
+	{
+		if(ifCustomerIdExist(ordersCustomer[item], customerIDs) == false)
+			return false;
+		
+	}
+	return true;
+}
+
+var xmlDoc = null;
+var passXmlFile = function(){
+
+	if (document.implementation && 
+	document.implementation.createDocument) 
+	{ 
+		xmlDoc = document.implementation.createDocument("","doc",null);   
+		xmlDoc.async = false;   
+		
+		fileName = document.getElementById("xmlNameInput").value;
+		
+		loaded = xmlDoc.load(fileName); 
+		if(!loaded){ 
+		
+			alert("Cannot find " + fileName); 
+		} 
+		else 
+		{ 
+			alert(fileName + " open succeed");
+			
+			if(!checkCustomerExist(xmlDoc))
+			{
+				alert(fileName + "has no customers");
+				return;
+			}
+			
+			if(!checkOrderHasRelatedCustomer(xmlDoc))
+			{
+				alert(fileName + "has order that no correspoding customer");
+				return;
+			}
+			
+			str = printTable(xmlDoc);
+			document.getElementById("content").innerHTML = str;
+		}
+
+		
+	} 
+
+}
+
+
+function printOneOrder(order)
+{
+		str = '';
+		y=order.childNodes;				
+		for (j=0;j<y.length;j++)
+		{
+		   if (y[j].nodeType == 1 && y[j].nodeName != 'CustomerID' && y[j].nodeName != 'EmployeeID')
+		   { 
+			  if( y[j].nodeName == 'ShipInfo')
+			  {
+				str = str + createBlock(y[j].getAttribute("ShippedDate"));
+				shipInfochild = first_child(y[j]);
+				while(shipInfochild)
+				{				
+					str = str + createBlock(data_of(first_child(shipInfochild)));
+					shipInfochild = node_after(shipInfochild);
+				}
+			  }
+			  else
+				str = str + createBlock(y[j].childNodes[0].nodeValue);
+			  
+			  
+		   }
+		}
+		
+		return createRow(str);
+}
+
+function showRelatedOrdersByCustomerID(customerID)
+{
+	str = "";
+	order = xmlDoc.getElementsByTagName("Order")[0];
+	str += '<table> <th> Order for Customer ' + customerID + '</th>';
+	str += (createRow(createBlock("Order Date") +  createBlock("Required Date") + createBlock("ShipInfo") + createBlock("Ship Via") + createBlock("Freight") + createBlock("ShipName")+ createBlock("Ship Address")+ createBlock("Ship City")+ createBlock("Ship Region")+ createBlock("Ship Postal Chode")+ createBlock("Ship Country")));
+	
+	
+	while(order)
+	{
+		//find whether the order's customer id is customerID	
+		orderchild = first_child(order);
+		while(orderchild)
+		{
+			if(orderchild.nodeName == 'CustomerID')
+			{	
+				if(data_of(first_child(orderchild)) == customerID)
+					str += printOneOrder(order);
+				else
+					break;
+			}			
+			orderchild = node_after(orderchild);
+		}
+		order = node_after(order);
+	}
+	
+	str +=('</table>');
+	return str;
+}
+
+
+
+function showCustomerOrder()
+{
+	var inputObjects = document.getElementsByTagName("input");
+	for(var i = 0; i < inputObjects.length; i++)
+	{
+		var obj = inputObjects[i];
+		if( obj.type == 'radio' && obj.checked == true)
+		{
+			customerID = obj.id;
+			str = showRelatedOrdersByCustomerID(customerID);
+			document.getElementById("content").innerHTML = str;
+		}
+	}
+}
+
+
+function createRow(foo)
+{
+	
+	return '<tr>' + foo + '</tr>';
+
+
+}
+
+function createBlock(str)
+{
+	return '<td>' + str + '</td>';
+}
+
+function createTable(content)
+{
+	document.write('<table>' + content + '</table>');
+}
+
+var printTable = function(xmlDoc)
+{	
+	content = '';
+	content += '<form> <table> <th> List of Customer Information </th>';
+	
+	content += (createRow(createBlock("Select One Click Submit") +  createBlock("Customer ID") + createBlock("Company Name") + createBlock("Contact Name") + createBlock("Contact Title") + createBlock("Phone")));
+	
+	
+	customer = xmlDoc.getElementsByTagName("Customer")[0];
+	
+	var customerArray = new Array();
+	
+	i = 0;
+	while (customer)
+	{
+	
+		radioTextLeft = '<INPUT TYPE="radio" name = "order" id ="';		
+		radioTextRight = '">';		
+		str = createBlock(radioTextLeft + customer.getAttribute("CustomerID") + radioTextRight);
+		
+		str = str + createBlock(customer.getAttribute("CustomerID"));
+		customerArray[i] = customer.getAttribute("CustomerID");
+		
+		customerChild = first_child(customer);
+		while(customerChild)
+		{
+			if(customerChild.nodeType == 1 && customerChild.nodeName != 'Fax')
+			{
+				node = customerChild.childNodes[0];
+				if(!is_all_ws(node))
+				str = str + createBlock(data_of(node));
+			}
+			customerChild = node_after(customerChild);
+		}
+		
+		str = createRow(str);
+		content +=(str);
+		i++;
+	  
+	  
+	  
+	  customer = node_after(customer);
+	 
+	}
+	
+	content += '</table></form><input type="button" value="Submit" onClick = "showCustomerOrder()"/>';
+	return content;
+}
+
+</script>
 </HEAD> 
 <BODY> 
-<H1>First Example of JavaScript</H1> 
+<H1 class = 'center'>Enter Customer/Order XML File</H1>
 
-<form>
+<form class = 'center'>
 <input id = "xmlNameInput" type="text" name="XmlName" value="" />
 <br/>
-<input type="submit" value="Submit" onClick = "passXmlFile()"/>
+<input type="button" value="Submit" onClick = "passXmlFile()"/>
 </form>
-<div id = "content"></div>
+<div class = 'center' id = "content"></div>
 </BODY> 
 </HTML> 
