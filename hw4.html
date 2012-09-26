@@ -127,6 +127,7 @@ var passXmlFile = function(){
 			}
 			
 			str = printTable(xmlDoc);
+			document.getElementById("form").innerHTML = "";
 			document.getElementById("content").innerHTML = str;
 		}
 
@@ -169,12 +170,14 @@ function printOneOrder(order)
 
 function showRelatedOrdersByCustomerID(customerID)
 {
-	str = "";
-	order = xmlDoc.getElementsByTagName("Order")[0];
+	
+	orders = xmlDoc.getElementsByTagName("Order");
+	order = orders[0];
+	str = '';
 	str += '<table> <th> Order for Customer ' + customerID + '</th>';
 	str += (createRow(createBlock("Order Date") +  createBlock("Required Date") + createBlock("ShipInfo") + createBlock("Ship Via") + createBlock("Freight") + createBlock("ShipName")+ createBlock("Ship Address")+ createBlock("Ship City")+ createBlock("Ship Region")+ createBlock("Ship Postal Chode")+ createBlock("Ship Country")));
 	
-	
+	var i = 0;
 	while(order)
 	{
 		//find whether the order's customer id is customerID	
@@ -184,7 +187,11 @@ function showRelatedOrdersByCustomerID(customerID)
 			if(orderchild.nodeName == 'CustomerID')
 			{	
 				if(data_of(first_child(orderchild)) == customerID)
+				{
 					str += printOneOrder(order);
+					i++;
+				}
+					
 				else
 					break;
 			}			
@@ -192,8 +199,14 @@ function showRelatedOrdersByCustomerID(customerID)
 		}
 		order = node_after(order);
 	}
-	
 	str +=('</table>');
+	
+	if(i == 0)
+	{
+		alert(customerID + "has no orders");
+		str = '';
+	}
+	
 	return str;
 }
 
@@ -201,6 +214,7 @@ function showRelatedOrdersByCustomerID(customerID)
 
 function showCustomerOrder()
 {
+
 	var inputObjects = document.getElementsByTagName("input");
 	for(var i = 0; i < inputObjects.length; i++)
 	{
@@ -209,7 +223,13 @@ function showCustomerOrder()
 		{
 			customerID = obj.id;
 			str = showRelatedOrdersByCustomerID(customerID);
-			document.getElementById("content").innerHTML = str;
+			
+			if(str != '')
+			{
+				document.getElementById("content").innerHTML = str;
+				break;
+			}
+				
 		}
 	}
 }
@@ -236,7 +256,7 @@ function createTable(content)
 var printTable = function(xmlDoc)
 {	
 	content = '';
-	content += '<form> <table> <th> List of Customer Information </th>';
+	content += '<table> <th> List of Customer Information </th>';
 	
 	content += (createRow(createBlock("Select One Click Submit") +  createBlock("Customer ID") + createBlock("Company Name") + createBlock("Contact Name") + createBlock("Contact Title") + createBlock("Phone")));
 	
@@ -278,20 +298,19 @@ var printTable = function(xmlDoc)
 	 
 	}
 	
-	content += '</table></form><input type="button" value="Submit" onClick = "showCustomerOrder()"/>';
+	content += '</table><input type="button" value="Submit" onClick = "showCustomerOrder()"/>';
 	return content;
 }
 
 </script>
 </HEAD> 
 <BODY> 
-<H1 class = 'center'>Enter Customer/Order XML File</H1>
-
-<form class = 'center'>
+<div id = 'form' class = 'center'>
+<H1>Enter Customer/Order XML File</H1>
 <input id = "xmlNameInput" type="text" name="XmlName" value="" />
 <br/>
 <input type="button" value="Submit" onClick = "passXmlFile()"/>
-</form>
+</div>
 <div class = 'center' id = "content"></div>
 </BODY> 
 </HTML> 
